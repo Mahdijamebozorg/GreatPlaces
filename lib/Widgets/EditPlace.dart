@@ -6,6 +6,10 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart' as pathDir;
+import 'package:places_app/Providers/Place.dart';
+import 'package:places_app/Providers/Places.dart';
+import 'package:places_app/Widgets/PhotoInput.dart';
+import 'package:provider/provider.dart';
 
 class EditPlace extends StatefulWidget {
   const EditPlace({Key? key}) : super(key: key);
@@ -15,11 +19,46 @@ class EditPlace extends StatefulWidget {
 }
 
 class _AddPlaceState extends State<EditPlace> {
-  GlobalKey _form = GlobalKey<FormState>();
+  final _form = GlobalKey<FormState>();
   FocusNode _details = FocusNode();
   FocusNode _address = FocusNode();
   XFile? _chosenFile = XFile("");
+  String placeId = "";
 
+  Place _place =
+      Place("", "", "", "", Location(address: "", latitude: 0, longitude: 0));
+
+  ///filling fields on editing mode
+  Map<String, String> _initialValues = {
+    "title": "",
+    "details": "",
+    "address": "",
+  };
+
+  bool routeLoaded = false;
+
+  ///load route args once
+  @override
+  void didChangeDependencies() {
+    if (!routeLoaded) {
+      final routeArgs = ModalRoute.of(context)!.settings.arguments as String?;
+      //editing mode
+      if (routeArgs != null) {
+        _place = Provider.of<Places>(context, listen: false)
+            .places
+            .firstWhere((place) => place.id == placeId);
+        _initialValues = {
+          "title": _place.title,
+          "details": _place.details,
+          "address": _place.location.address
+        };
+      }
+      routeLoaded = true;
+    }
+    super.didChangeDependencies();
+  }
+
+  ///remove data after distructing
   @override
   void dispose() {
     _details.dispose();
@@ -27,45 +66,30 @@ class _AddPlaceState extends State<EditPlace> {
     super.dispose();
   }
 
-  final Map<String, String> _initialValues = {
-    "title": "",
-    "details": "",
-  };
-
+  ///saving form
   void saveForm() {
-    // if (!_form.currentState.validate()) return;
-  }
+    //validation...
 
-  Future _takeImage() async {
-    final _picker = ImagePicker();
-
-    final imageFile =
-        await _picker.pickImage(source: ImageSource.camera, maxWidth: 600);
-
-    if (imageFile != null) {
-      setState(() {
-        _chosenFile = imageFile;
-      });
+    _form.currentState!.save();
+    //new place
+    if (placeId.isEmpty) {
+      Provider.of<Places>(context).addPlace(Place(
+        _place.id,
+        _place.title,
+        _place.details,
+        _place.imageUrl,
+        _place.location,
+      ));
     }
-    // available save path
-    final appDir = await pathDir.getApplicationDocumentsDirectory();
-
-    // temp file name
-    final fileName = path.basename(imageFile?.path as String);
-
-    // saving file to path
-    await imageFile?.saveTo("${appDir.path}/$fileName");
-  }
-
-  Future _chooseImage() async {
-    final _picker = ImagePicker();
-    final _pickedImage =
-        await _picker.pickImage(source: ImageSource.gallery, maxWidth: 600);
-    if (_pickedImage != null) {
-      setState(() {
-        _chosenFile = _pickedImage;
-      });
-    }
+    //editing place
+    else {}
+    Provider.of<Places>(context, listen: false).updatePlace(Place(
+      _place.id,
+      _place.title,
+      _place.details,
+      _place.imageUrl,
+      _place.location,
+    ));
   }
 
   @override
@@ -112,6 +136,23 @@ class _AddPlaceState extends State<EditPlace> {
                                     FocusScope.of(context)
                                         .requestFocus(_details);
                                   },
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter a description.';
+                                    }
+                                    return null;
+                                  },
+                                  onSaved: (value) {
+                                    if (value != null) {
+                                      _place = Place(
+                                        _place.id,
+                                        value,
+                                        _place.details,
+                                        _place.imageUrl,
+                                        _place.location,
+                                      );
+                                    }
+                                  },
                                 ),
                               ),
 
@@ -129,6 +170,23 @@ class _AddPlaceState extends State<EditPlace> {
                                     FocusScope.of(context)
                                         .requestFocus(_address);
                                   },
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter a description.';
+                                    }
+                                    return null;
+                                  },
+                                  onSaved: (value) {
+                                    if (value != null) {
+                                      _place = Place(
+                                        _place.id,
+                                        _place.title,
+                                        value,
+                                        _place.imageUrl,
+                                        _place.location,
+                                      );
+                                    }
+                                  },
                                 ),
                               ),
 
@@ -140,10 +198,31 @@ class _AddPlaceState extends State<EditPlace> {
                                       border: OutlineInputBorder(
                                           borderRadius:
                                               BorderRadius.circular(15))),
-                                  initialValue: _initialValues["details"],
+                                  initialValue: _initialValues["address"],
                                   focusNode: _address,
                                   onFieldSubmitted: (_) {
                                     _address.unfocus();
+                                  },
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter a description.';
+                                    }
+                                    return null;
+                                  },
+                                  onSaved: (value) {
+                                    if (value != null) {
+                                      _place = Place(
+                                        _place.id,
+                                        _place.title,
+                                        _place.details,
+                                        _place.imageUrl,
+                                        Location(
+                                          address: value,
+                                          latitude: _place.location.latitude,
+                                          longitude: _place.location.longitude,
+                                        ),
+                                      );
+                                    }
                                   },
                                 ),
                               ),
@@ -152,7 +231,10 @@ class _AddPlaceState extends State<EditPlace> {
                         ),
 
                         // PhotoInput
-                        
+                        PhotInput(addImage: (XFile? file) {
+                          _chosenFile = file;
+                        }),
+
                         //map
                         SizedBox(
                           height: constraints.maxHeight * 0.25,
@@ -188,7 +270,9 @@ class _AddPlaceState extends State<EditPlace> {
                   ),
                 ),
                 ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+                    saveForm();
+                  },
                   icon: const Icon(Icons.add),
                   label: const Text("Add place"),
                   style: const ButtonStyle(

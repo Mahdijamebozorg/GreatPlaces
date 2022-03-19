@@ -1,67 +1,110 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:places_app/Providers/Place.dart';
-import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart' as pathDir;
 
-class PhotInput extends StatelessWidget {
-  const PhotInput({Key? key}) : super(key: key);
+class PhotInput extends StatefulWidget {
+  Function addImage;
+  PhotInput({
+    required this.addImage,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  State<PhotInput> createState() => _PhotInputState();
+}
+
+class _PhotInputState extends State<PhotInput> {
+  XFile? file = XFile("");
+
+  ///take image if device have camera
+  Future _takeImage() async {
+    final _picker = ImagePicker();
+    final imageFile =
+        await _picker.pickImage(source: ImageSource.camera, maxWidth: 600);
+    if (imageFile != null) {
+      setState(() {
+        file = imageFile;
+      });
+    }
+    // available save path
+    final appDir = await pathDir.getApplicationDocumentsDirectory();
+    // temp file name
+    final fileName = path.basename(imageFile?.path as String);
+    // saving file to path
+    await imageFile?.saveTo("${appDir.path}/$fileName");
+  }
+
+  ///choose an image from device
+  Future _chooseImage() async {
+    final _picker = ImagePicker();
+    final _pickedImage =
+        await _picker.pickImage(source: ImageSource.gallery, maxWidth: 600);
+    //if an image has choosen
+    if (_pickedImage != null) {
+      setState(() {
+        file = _pickedImage;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<Place>(builder: (context, place, child) {
-      return LayoutBuilder(builder: (context, constraints) {
-        return Container(
-          height: constraints.maxHeight * 0.25,
-          width: constraints.maxWidth,
-          child: LayoutBuilder(
-            builder: (ctx, imagePart) => Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                //buttons
-                SizedBox(
-                  height: imagePart.maxHeight,
-                  width: imagePart.maxWidth * 0.2,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      // chooese button
-                      ElevatedButton(
-                        onPressed: place.,
-                        child: const Icon(Icons.photo_album),
+    return LayoutBuilder(builder: (context, constraints) {
+      return SizedBox(
+        height: constraints.maxHeight * 0.25,
+        width: constraints.maxWidth,
+        child: LayoutBuilder(
+          builder: (ctx, imagePart) => Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              //buttons
+              SizedBox(
+                height: imagePart.maxHeight,
+                width: imagePart.maxWidth * 0.2,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // chooese button
+                    ElevatedButton(
+                      onPressed: _chooseImage,
+                      child: const Icon(Icons.photo_album),
+                    ),
+                    //capture button
+                    ElevatedButton(
+                      onPressed: _takeImage,
+                      child: const Icon(
+                        Icons.camera_alt,
                       ),
-                      //capture button
-                      ElevatedButton(
-                        onPressed: _takeImage,
-                        child: const Icon(
-                          Icons.camera_alt,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                //photo preview
-                SizedBox(
-                  height: imagePart.maxHeight,
-                  width: imagePart.maxWidth * 0.7,
-                  child: _chosenFile?.path == ""
-                      ? Image.asset(
-                          "assets/images/temp.png",
-                          fit: BoxFit.scaleDown,
-                        )
-                      : kIsWeb
-                          ? Image.network(
-                              _chosenFile?.path ?? "",
-                              fit: BoxFit.fill,
-                            )
-                          : Image.file(
-                              File(_chosenFile?.path ?? ""),
-                              fit: BoxFit.fill,
-                            ),
-                ),
-              ],
-            ),
+              ),
+              //photo preview
+              SizedBox(
+                height: imagePart.maxHeight,
+                width: imagePart.maxWidth * 0.7,
+                child: file?.path == ""
+                    ? Image.asset(
+                        "assets/images/temp.png",
+                        fit: BoxFit.scaleDown,
+                      )
+                    : kIsWeb
+                        ? Image.network(
+                            file?.path ?? "",
+                            fit: BoxFit.fill,
+                          )
+                        : Image.file(
+                            File(file?.path ?? ""),
+                            fit: BoxFit.fill,
+                          ),
+              ),
+            ],
           ),
-        );
-      });
+        ),
+      );
     });
   }
 }

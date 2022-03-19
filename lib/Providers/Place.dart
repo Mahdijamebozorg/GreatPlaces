@@ -10,7 +10,6 @@ class Location {
 }
 
 class Place with ChangeNotifier {
-  //these should be private
   String _id;
   String _title;
   String _details;
@@ -25,7 +24,33 @@ class Place with ChangeNotifier {
     this._location,
   );
 
-  //getter for all data
+  String get id => _id;
 
-  //setter for information
+  String get title => _title;
+
+  String get details => _details;
+
+  String get imageUrl => _imageUrl;
+
+  Location get location => _location;
+
+  Future chagneTitle(String newTitle) async {
+    _title = newTitle;
+    notifyListeners();
+  }
+
+  Future chagneDetails(String newDetails) async {
+    _title = newDetails;
+    notifyListeners();
+  }
+
+  Future chagneImageUrl(String newImageUrl) async {
+    _imageUrl = newImageUrl;
+    notifyListeners();
+  }
+
+  Future chagneLocation(Location newLocation) async {
+    _location = newLocation;
+    notifyListeners();
+  }
 }

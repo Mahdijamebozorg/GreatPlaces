@@ -30,4 +30,10 @@ class DBHelper {
     final dataBase = await DBHelper.dataBase(table);
     await dataBase.delete(table, where: "id = ?", whereArgs: [id]);
   }
+
+  static Future<void> updateData(
+      String table, Map<String, Object> values, String id) async {
+    final dataBase = await DBHelper.dataBase(table);
+    await dataBase.update(table, values, where: "id = ?", whereArgs: [id]);
+  }
 }

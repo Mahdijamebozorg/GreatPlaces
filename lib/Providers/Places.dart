@@ -6,13 +6,13 @@ import 'package:places_app/Providers/Place.dart';
 class Places with ChangeNotifier {
   //a temp list of places
   List<Place> _places = [
-    Place(
-      "i1",
-      "test",
-      "a testing list item",
-      "assets/images/rome.jpg",
-      Location(address: "someWhere", latitude: 0, longitude: 0),
-    ),
+    // Place(
+    //   "i1",
+    //   "test",
+    //   "a testing list item",
+    //   "assets/images/rome.jpg",
+    //   Location(address: "someWhere", latitude: 0, longitude: 0),
+    // ),
   ];
 
   List<Place> get places => [..._places];

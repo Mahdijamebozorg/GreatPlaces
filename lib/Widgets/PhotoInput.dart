@@ -6,8 +6,8 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart' as pathDir;
 
 class PhotInput extends StatefulWidget {
-  Function addImage;
-  PhotInput({
+  final Function addImage;
+  const PhotInput({
     required this.addImage,
     Key? key,
   }) : super(key: key);
@@ -17,24 +17,26 @@ class PhotInput extends StatefulWidget {
 }
 
 class _PhotInputState extends State<PhotInput> {
-  XFile file = XFile("");
+  XFile? file = XFile("");
 
   ///take image if device have camera
   Future _takeImage() async {
     final _picker = ImagePicker();
     final imageFile =
         await _picker.pickImage(source: ImageSource.camera, maxWidth: 600);
-    if (imageFile != null) {
-      setState(() {
-        file = imageFile;
-      });
-    }
     // available save path
     final appDir = await pathDir.getApplicationDocumentsDirectory();
     // temp file name
     final fileName = path.basename(imageFile?.path as String);
     // saving file to path
     await imageFile?.saveTo("${appDir.path}/$fileName");
+    print("Image saved");
+    if (imageFile != null) {
+      setState(() {
+        file = imageFile;
+        widget.addImage(file);
+      });
+    }
   }
 
   ///choose an image from device
@@ -46,6 +48,7 @@ class _PhotInputState extends State<PhotInput> {
     if (_pickedImage != null) {
       setState(() {
         file = _pickedImage;
+        widget.addImage(file);
       });
     }
   }
@@ -76,9 +79,9 @@ class _PhotInputState extends State<PhotInput> {
           ),
           Expanded(
             //photo preview
-            child: file.path == ""
+            child: file!.path == ""
                 ? Padding(
-                    padding: EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(8),
                     child: Container(
                       decoration:
                           BoxDecoration(border: Border.all(color: Colors.red)),
@@ -87,16 +90,16 @@ class _PhotInputState extends State<PhotInput> {
                   )
                 : kIsWeb
                     ? Padding(
-                        padding: EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(8),
                         child: Image.network(
-                          file.path,
+                          file!.path,
                           fit: BoxFit.fill,
                         ),
                       )
                     : Padding(
-                        padding: EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(8),
                         child: Image.file(
-                          File(file.path),
+                          File(file!.path),
                           fit: BoxFit.fill,
                         ),
                       ),

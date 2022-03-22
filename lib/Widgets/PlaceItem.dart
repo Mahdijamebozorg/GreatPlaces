@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:places_app/Providers/Place.dart';
@@ -12,19 +14,11 @@ class PlaceItem extends StatelessWidget {
     return Card(
       elevation: 15,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(50),
-            topRight: Radius.circular(50),
-            bottomLeft: Radius.circular(10),
-            bottomRight: Radius.circular(10)),
+        borderRadius: BorderRadius.all(Radius.circular(10)),
       ),
       //rounding corners
       child: ClipRRect(
-        borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(50),
-            topRight: Radius.circular(50),
-            bottomLeft: Radius.circular(10),
-            bottomRight: Radius.circular(10)),
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
         child: GridTile(
           //photo
           child: Hero(
@@ -34,7 +28,7 @@ class PlaceItem extends StatelessWidget {
               placeholder: const AssetImage("assets/images/temp.png"),
               image: (kIsWeb
                   ? NetworkImage(_place.imageUrl)
-                  : AssetImage(_place.imageUrl)) as ImageProvider,
+                  : FileImage(File(_place.imageUrl))) as ImageProvider,
             ),
           ),
           //details

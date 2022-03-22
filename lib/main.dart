@@ -28,6 +28,7 @@ class PlacesApp extends StatelessWidget {
         },
         theme: ThemeData(
           backgroundColor: Colors.teal[100],
+          scaffoldBackgroundColor: Colors.black54
         ),
       ),
       // ),

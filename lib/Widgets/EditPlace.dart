@@ -23,7 +23,6 @@ class _AddPlaceState extends State<EditPlace> {
   final GlobalKey<FormState> _form = GlobalKey<FormState>();
   FocusNode _details = FocusNode();
   FocusNode _address = FocusNode();
-  XFile _chosenFile = XFile("");
   var location = null;
   String placeId = "";
 
@@ -72,10 +71,11 @@ class _AddPlaceState extends State<EditPlace> {
   void saveForm() {
     //validation...
     if (!_form.currentState!.validate() ||
-        //photo
-        _chosenFile.path.isEmpty ||
+            //photo
+            _place.imageUrl.isEmpty //||
         //location
-        location == null) return;
+        // location == null
+        ) return;
 
     _form.currentState!.save();
     //new place
@@ -104,8 +104,11 @@ class _AddPlaceState extends State<EditPlace> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
+      //if keyboard toggled and it covered text inputs, make widget bigger
       height: max(
+        //default size of widget
         MediaQuery.of(context).size.height * 0.9,
+        // text widgets size + keyboard size
         MediaQuery.of(context).size.height * 0.3 +
             MediaQuery.of(context).viewInsets.bottom,
       ),
@@ -162,6 +165,7 @@ class _AddPlaceState extends State<EditPlace> {
                                   onSaved: (value) {
                                     _place = Place(
                                       _place.id,
+                                      //
                                       value!,
                                       _place.details,
                                       _place.imageUrl,
@@ -203,6 +207,7 @@ class _AddPlaceState extends State<EditPlace> {
                                     _place = Place(
                                       _place.id,
                                       _place.title,
+                                      //
                                       value!,
                                       _place.imageUrl,
                                       _place.location,
@@ -244,6 +249,7 @@ class _AddPlaceState extends State<EditPlace> {
                                       _place.title,
                                       _place.details,
                                       _place.imageUrl,
+                                      //
                                       Location(
                                         address: value!,
                                         latitude: _place.location.latitude,
@@ -268,7 +274,14 @@ class _AddPlaceState extends State<EditPlace> {
                                     Flexible(
                                       flex: 1,
                                       child: PhotInput(addImage: (XFile file) {
-                                        _chosenFile = file;
+                                        _place = Place(
+                                          _place.id,
+                                          _place.title,
+                                          _place.details,
+                                          //image path
+                                          file.path,
+                                          _place.location,
+                                        );
                                       }),
                                     ),
                                     // MapInput
@@ -286,7 +299,14 @@ class _AddPlaceState extends State<EditPlace> {
                                     Flexible(
                                       flex: 1,
                                       child: PhotInput(addImage: (XFile file) {
-                                        _chosenFile = file;
+                                        _place = Place(
+                                          _place.id,
+                                          _place.title,
+                                          _place.details,
+                                          //image path
+                                          file.path,
+                                          _place.location,
+                                        );
                                       }),
                                     ),
                                     // MapInput

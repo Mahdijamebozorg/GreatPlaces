@@ -17,7 +17,7 @@ class PhotInput extends StatefulWidget {
 }
 
 class _PhotInputState extends State<PhotInput> {
-  XFile? file = XFile("");
+  XFile file = XFile("");
 
   ///take image if device have camera
   Future _takeImage() async {
@@ -52,59 +52,57 @@ class _PhotInputState extends State<PhotInput> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      return SizedBox(
-        height: constraints.maxHeight * 0.25,
-        width: constraints.maxWidth,
-        child: LayoutBuilder(
-          builder: (ctx, imagePart) => Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return LayoutBuilder(
+      builder: (ctx, imagePart) => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          //buttons
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              //buttons
-              SizedBox(
-                height: imagePart.maxHeight,
-                width: imagePart.maxWidth * 0.2,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    // chooese button
-                    ElevatedButton(
-                      onPressed: _chooseImage,
-                      child: const Icon(Icons.photo_album),
-                    ),
-                    //capture button
-                    ElevatedButton(
-                      onPressed: _takeImage,
-                      child: const Icon(
-                        Icons.camera_alt,
-                      ),
-                    ),
-                  ],
-                ),
+              // chooese button
+              ElevatedButton(
+                onPressed: _chooseImage,
+                child: const Icon(Icons.photo_album),
               ),
-              //photo preview
-              SizedBox(
-                height: imagePart.maxHeight,
-                width: imagePart.maxWidth * 0.7,
-                child: file?.path == ""
-                    ? Image.asset(
-                        "assets/images/temp.png",
-                        fit: BoxFit.scaleDown,
-                      )
-                    : kIsWeb
-                        ? Image.network(
-                            file?.path ?? "",
-                            fit: BoxFit.fill,
-                          )
-                        : Image.file(
-                            File(file?.path ?? ""),
-                            fit: BoxFit.fill,
-                          ),
+              //capture button
+              ElevatedButton(
+                onPressed: _takeImage,
+                child: const Icon(
+                  Icons.camera_alt,
+                ),
               ),
             ],
           ),
-        ),
-      );
-    });
+          Expanded(
+            //photo preview
+            child: file.path == ""
+                ? Padding(
+                    padding: EdgeInsets.all(8),
+                    child: Container(
+                      decoration:
+                          BoxDecoration(border: Border.all(color: Colors.red)),
+                      child: const Center(child: Text("No image has chosen!")),
+                    ),
+                  )
+                : kIsWeb
+                    ? Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Image.network(
+                          file.path,
+                          fit: BoxFit.fill,
+                        ),
+                      )
+                    : Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Image.file(
+                          File(file.path),
+                          fit: BoxFit.fill,
+                        ),
+                      ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -8,6 +8,7 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart' as pathDir;
 import 'package:places_app/Providers/Place.dart';
 import 'package:places_app/Providers/Places.dart';
+import 'package:places_app/Widgets/MapInput.dart';
 import 'package:places_app/Widgets/PhotoInput.dart';
 import 'package:provider/provider.dart';
 
@@ -19,10 +20,11 @@ class EditPlace extends StatefulWidget {
 }
 
 class _AddPlaceState extends State<EditPlace> {
-  final _form = GlobalKey<FormState>();
+  final GlobalKey<FormState> _form = GlobalKey<FormState>();
   FocusNode _details = FocusNode();
   FocusNode _address = FocusNode();
-  XFile? _chosenFile = XFile("");
+  XFile _chosenFile = XFile("");
+  var location = null;
   String placeId = "";
 
   Place _place =
@@ -35,10 +37,10 @@ class _AddPlaceState extends State<EditPlace> {
     "address": "",
   };
 
-  bool routeLoaded = false;
-
   ///load route args once
+  bool routeLoaded = false;
   @override
+  //load data if in editing mode
   void didChangeDependencies() {
     if (!routeLoaded) {
       final routeArgs = ModalRoute.of(context)!.settings.arguments as String?;
@@ -69,11 +71,16 @@ class _AddPlaceState extends State<EditPlace> {
   ///saving form
   void saveForm() {
     //validation...
+    if (!_form.currentState!.validate() ||
+        //photo
+        _chosenFile.path.isEmpty ||
+        //location
+        location == null) return;
 
     _form.currentState!.save();
     //new place
     if (placeId.isEmpty) {
-      Provider.of<Places>(context).addPlace(Place(
+      Provider.of<Places>(context, listen: false).addPlace(Place(
         _place.id,
         _place.title,
         _place.details,
@@ -82,14 +89,16 @@ class _AddPlaceState extends State<EditPlace> {
       ));
     }
     //editing place
-    else {}
-    Provider.of<Places>(context, listen: false).updatePlace(Place(
-      _place.id,
-      _place.title,
-      _place.details,
-      _place.imageUrl,
-      _place.location,
-    ));
+    else {
+      Provider.of<Places>(context, listen: false).updatePlace(Place(
+        _place.id,
+        _place.title,
+        _place.details,
+        _place.imageUrl,
+        _place.location,
+      ));
+    }
+    Navigator.of(context).pop();
   }
 
   @override
@@ -100,8 +109,9 @@ class _AddPlaceState extends State<EditPlace> {
         MediaQuery.of(context).size.height * 0.3 +
             MediaQuery.of(context).viewInsets.bottom,
       ),
+      width: MediaQuery.of(context).size.width,
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(8),
         child: LayoutBuilder(
           builder: (ctx, constraints) => Card(
             child: Column(
@@ -113,157 +123,179 @@ class _AddPlaceState extends State<EditPlace> {
                   child: Form(
                     key: _form,
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         //input texts
                         SizedBox(
-                          height: constraints.maxHeight * 0.35,
+                          height: constraints.maxHeight * 0.4,
                           width: constraints.maxWidth,
                           child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               //title
-                              Flexible(
+                              SizedBox(
+                                height: constraints.maxHeight * 0.4 * 0.3,
                                 child: TextFormField(
+                                  //
                                   decoration: InputDecoration(
-                                      labelText: "Title",
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(15))),
+                                    labelText: "Title",
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                  ),
+                                  //
                                   initialValue: _initialValues["title"],
+                                  //
                                   onFieldSubmitted: (_) {
                                     FocusScope.of(context)
                                         .requestFocus(_details);
                                   },
+                                  //
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
                                       return 'Please enter a description.';
                                     }
                                     return null;
                                   },
+                                  //
                                   onSaved: (value) {
-                                    if (value != null) {
-                                      _place = Place(
-                                        _place.id,
-                                        value,
-                                        _place.details,
-                                        _place.imageUrl,
-                                        _place.location,
-                                      );
-                                    }
+                                    _place = Place(
+                                      _place.id,
+                                      value!,
+                                      _place.details,
+                                      _place.imageUrl,
+                                      _place.location,
+                                    );
                                   },
                                 ),
                               ),
 
                               //details
-                              Flexible(
+                              SizedBox(
+                                height: constraints.maxHeight * 0.4 * 0.3,
                                 child: TextFormField(
+                                  //
                                   decoration: InputDecoration(
-                                      labelText: "Details",
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(15))),
+                                    labelText: "Details",
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                  ),
+                                  //
                                   initialValue: _initialValues["details"],
+                                  //
                                   focusNode: _details,
+                                  //
                                   onFieldSubmitted: (_) {
                                     FocusScope.of(context)
                                         .requestFocus(_address);
                                   },
+                                  //
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
                                       return 'Please enter a description.';
                                     }
                                     return null;
                                   },
+                                  //
                                   onSaved: (value) {
-                                    if (value != null) {
-                                      _place = Place(
-                                        _place.id,
-                                        _place.title,
-                                        value,
-                                        _place.imageUrl,
-                                        _place.location,
-                                      );
-                                    }
+                                    _place = Place(
+                                      _place.id,
+                                      _place.title,
+                                      value!,
+                                      _place.imageUrl,
+                                      _place.location,
+                                    );
                                   },
                                 ),
                               ),
 
                               //address
-                              Flexible(
+                              SizedBox(
+                                height: constraints.maxHeight * 0.4 * 0.3,
                                 child: TextFormField(
+                                  //
                                   decoration: InputDecoration(
-                                      labelText: "Adress",
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(15))),
+                                    labelText: "Adress",
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                  ),
+                                  //
                                   initialValue: _initialValues["address"],
+                                  //
                                   focusNode: _address,
+                                  //
                                   onFieldSubmitted: (_) {
                                     _address.unfocus();
                                   },
+                                  //
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
                                       return 'Please enter a description.';
                                     }
                                     return null;
                                   },
+                                  //
                                   onSaved: (value) {
-                                    if (value != null) {
-                                      _place = Place(
-                                        _place.id,
-                                        _place.title,
-                                        _place.details,
-                                        _place.imageUrl,
-                                        Location(
-                                          address: value,
-                                          latitude: _place.location.latitude,
-                                          longitude: _place.location.longitude,
-                                        ),
-                                      );
-                                    }
+                                    _place = Place(
+                                      _place.id,
+                                      _place.title,
+                                      _place.details,
+                                      _place.imageUrl,
+                                      Location(
+                                        address: value!,
+                                        latitude: _place.location.latitude,
+                                        longitude: _place.location.longitude,
+                                      ),
+                                    );
                                   },
                                 ),
                               ),
                             ],
                           ),
                         ),
-
-                        // PhotoInput
-                        PhotInput(addImage: (XFile? file) {
-                          _chosenFile = file;
-                        }),
-
-                        //map
+                        //map and photo
                         SizedBox(
-                          height: constraints.maxHeight * 0.25,
+                          height: constraints.maxHeight * 0.5,
                           width: constraints.maxWidth,
-                          child: LayoutBuilder(
-                            builder: (ctx, mapPart) => Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                SizedBox(
-                                  width: mapPart.maxWidth * 0.2,
-                                  height: mapPart.maxHeight / 2.5,
-                                  child: ElevatedButton(
-                                    onPressed: () {},
-                                    child: const Icon(
-                                      Icons.map,
+                          //specefic view for mobile and desktop
+                          child: Platform.isAndroid || Platform.isIOS
+                              ? Column(
+                                  // PhotoInput
+                                  children: [
+                                    Flexible(
+                                      flex: 1,
+                                      child: PhotInput(addImage: (XFile file) {
+                                        _chosenFile = file;
+                                      }),
                                     ),
-                                  ),
+                                    // MapInput
+                                    Flexible(
+                                      flex: 1,
+                                      child: SizedBox(
+                                        child: MapInput(),
+                                      ),
+                                    )
+                                  ],
+                                )
+                              : Row(
+                                  children: [
+                                    // PhotoInput
+                                    Flexible(
+                                      flex: 1,
+                                      child: PhotInput(addImage: (XFile file) {
+                                        _chosenFile = file;
+                                      }),
+                                    ),
+                                    // MapInput
+                                    Flexible(
+                                      flex: 1,
+                                      child: MapInput(),
+                                    )
+                                  ],
                                 ),
-                                SizedBox(
-                                  height: mapPart.maxHeight,
-                                  width: mapPart.maxWidth * 0.7,
-                                  child: Image.asset(
-                                    "assets/images/temp.png",
-                                    fit: BoxFit.scaleDown,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                         ),
                       ],
                     ),

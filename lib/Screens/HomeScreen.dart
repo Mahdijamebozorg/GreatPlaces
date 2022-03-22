@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:places_app/Widgets/EditPlace.dart';
 import 'package:provider/provider.dart';
 
@@ -73,27 +74,30 @@ class HomeScreen extends StatelessWidget {
                       ),
 
                       //updating tiles according to places list
-                      Consumer<Places>(
-                        builder: (context, data, child) => SliverGrid(
-                          delegate: _places.places.isEmpty
-                              ? SliverChildBuilderDelegate(
+                      _places.places.isEmpty
+                          //used because of bug in 0 item sliverGrid
+                          ? const SliverPadding(padding: EdgeInsets.zero)
+                          : Consumer<Places>(
+                              builder: (context, data, child) => SliverGrid(
+                                delegate: SliverChildBuilderDelegate(
                                   (_, index) => PlaceItem(data.places[index]),
                                   childCount: _places.places.length,
-                                )
-                              : SliverChildListDelegate.fixed([]),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount:
-                                Platform.isAndroid || Platform.isIOS ? 1 : 2,
-                            //width/height
-                            childAspectRatio: 3 / 2,
-                            mainAxisSpacing:
-                                MediaQuery.of(context).size.height * 0.03,
-                            crossAxisSpacing:
-                                MediaQuery.of(context).size.width * 0.03,
-                          ),
-                        ),
-                      ),
+                                ),
+                                gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount:
+                                      Platform.isAndroid || Platform.isIOS
+                                          ? 1
+                                          : 2,
+                                  //width/height
+                                  childAspectRatio: 3 / 2,
+                                  mainAxisSpacing:
+                                      MediaQuery.of(context).size.height * 0.03,
+                                  crossAxisSpacing:
+                                      MediaQuery.of(context).size.width * 0.03,
+                                ),
+                              ),
+                            ),
                     ],
                   ),
       ),

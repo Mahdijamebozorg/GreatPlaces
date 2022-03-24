@@ -27,9 +27,8 @@ class PlacesApp extends StatelessWidget {
           HomeScreen.routeName: (ctx) => const HomeScreen(),
         },
         theme: ThemeData(
-          backgroundColor: Colors.teal[100],
-          scaffoldBackgroundColor: Colors.black54
-        ),
+            backgroundColor: Colors.teal[100],
+            scaffoldBackgroundColor: Colors.black54),
       ),
       // ),
     );

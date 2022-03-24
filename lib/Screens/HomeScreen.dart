@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:places_app/Widgets/EditPlace.dart';
 import 'package:provider/provider.dart';
 
@@ -76,7 +75,11 @@ class HomeScreen extends StatelessWidget {
                       //updating tiles according to places list
                       _places.places.isEmpty
                           //used because of bug in 0 item sliverGrid
-                          ? const SliverPadding(padding: EdgeInsets.zero)
+                          ? const SliverSafeArea(
+                              sliver: SliverToBoxAdapter(
+                                  child:
+                                      Center(child: Text("No place added!"))),
+                            )
                           : Consumer<Places>(
                               builder: (context, data, child) => SliverGrid(
                                 delegate: SliverChildBuilderDelegate(

@@ -26,8 +26,17 @@ class _AddPlaceState extends State<EditPlace> {
   var location = null;
   String placeId = "";
 
-  Place _place =
-      Place("", "", "", "", Location(address: "", latitude: 0, longitude: 0));
+  Place _place = Place(
+    Random().nextInt(1000).toString(),
+    "",
+    "",
+    "",
+    Location(
+      address: "",
+      latitude: 0,
+      longitude: 0,
+    ),
+  );
 
   ///filling fields on editing mode
   Map<String, String> _initialValues = {
@@ -68,7 +77,7 @@ class _AddPlaceState extends State<EditPlace> {
   }
 
   ///saving form
-  void saveForm() {
+  Future saveForm() async {
     //validation...
     if (!_form.currentState!.validate() ||
             //photo
@@ -80,7 +89,7 @@ class _AddPlaceState extends State<EditPlace> {
     _form.currentState!.save();
     //new place
     if (placeId.isEmpty) {
-      Provider.of<Places>(context, listen: false).addPlace(Place(
+      await Provider.of<Places>(context, listen: false).addPlace(Place(
         _place.id,
         _place.title,
         _place.details,
@@ -90,7 +99,7 @@ class _AddPlaceState extends State<EditPlace> {
     }
     //editing place
     else {
-      Provider.of<Places>(context, listen: false).updatePlace(Place(
+      await Provider.of<Places>(context, listen: false).updatePlace(Place(
         _place.id,
         _place.title,
         _place.details,
@@ -322,8 +331,8 @@ class _AddPlaceState extends State<EditPlace> {
                   ),
                 ),
                 ElevatedButton.icon(
-                  onPressed: () {
-                    saveForm();
+                  onPressed: () async {
+                    await saveForm();
                   },
                   icon: const Icon(Icons.add),
                   label: const Text("Add place"),

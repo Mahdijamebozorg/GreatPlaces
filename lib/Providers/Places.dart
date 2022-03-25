@@ -1,6 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:places_app/Helpers/dbHelper.dart';
-
 import 'package:places_app/Providers/Place.dart';
 
 class Places with ChangeNotifier {
@@ -24,7 +25,6 @@ class Places with ChangeNotifier {
         "title": newPlace.title,
         "details": newPlace.details,
         "imageUrl": newPlace.imageUrl, //path to image
-        "address": newPlace.location.address,
         "latitude": newPlace.location.latitude.toString(),
         "longitude": newPlace.location.longitude.toString(),
       },
@@ -44,7 +44,6 @@ class Places with ChangeNotifier {
           "title": newPlace.title,
           "details": newPlace.details,
           "imageUrl": newPlace.imageUrl, //path to image
-          "address": newPlace.location.address,
           "latitude": newPlace.location.latitude.toString(),
           "longitude": newPlace.location.longitude.toString(),
         },
@@ -57,6 +56,7 @@ class Places with ChangeNotifier {
     //load from device
     final data = await DBHelper.getData(table);
     if (data.isEmpty) return;
+    _places.clear();
     for (Map<String, dynamic> place in data) {
       _places.add(
         Place(
@@ -64,8 +64,7 @@ class Places with ChangeNotifier {
           place["title"],
           place["details"],
           place["imageUrl"],
-          Location(
-            address: place["address"],
+          PlaceLocation(
             latitude: double.parse(place["latitude"]),
             longitude: double.parse(place["longitude"]),
           ),
@@ -77,13 +76,26 @@ class Places with ChangeNotifier {
 
   ///remove a place from sqlite
   Future removePlace(String id) async {
-    _places.remove(_places[findById(id)]);
+    final place = _places[findById(id)];
+
+    //remove image
+    await File(place.imageUrl).delete();
+
+    //remove from RAM
+    _places.remove(place);
+
     //remove from device
     await DBHelper.deleteData(table, id);
+
     notifyListeners();
   }
 
   Future resetAllPlaces() async {
+    //delete cache files
+    for (var place in _places) {
+      await File(place.imageUrl).delete();
+    }
+
     DBHelper.resetData(table);
     // notifyListeners();
   }

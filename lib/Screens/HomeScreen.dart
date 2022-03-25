@@ -34,7 +34,7 @@ class HomeScreen extends StatelessWidget {
                         backgroundColor:
                             Theme.of(context).primaryColor.withOpacity(0.7),
                         expandedHeight: MediaQuery.of(context).size.height *
-                            (Platform.isAndroid || Platform.isIOS ? 0.5 : 0.7),
+                            (Platform.isAndroid || Platform.isIOS ? 0.45 : 0.7),
                         flexibleSpace: FlexibleSpaceBar(
                           title: const Text("Places"),
                           background: Card(
@@ -73,15 +73,16 @@ class HomeScreen extends StatelessWidget {
                       ),
 
                       //updating tiles according to places list
-                      _places.places.isEmpty
-                          //used because of bug in 0 item sliverGrid
-                          ? const SliverSafeArea(
-                              sliver: SliverToBoxAdapter(
-                                  child:
-                                      Center(child: Text("No place added!"))),
-                            )
-                          : Consumer<Places>(
-                              builder: (context, data, child) => SliverGrid(
+                      Consumer<Places>(
+                        builder: (context, data, child) => _places
+                                .places.isEmpty
+                            //used because of bug in 0 item sliverGrid
+                            ? const SliverSafeArea(
+                                sliver: SliverToBoxAdapter(
+                                    child:
+                                        Center(child: Text("No place added!"))),
+                              )
+                            : SliverGrid(
                                 delegate: SliverChildBuilderDelegate(
                                   (_, index) => PlaceItem(data.places[index]),
                                   childCount: _places.places.length,
@@ -100,7 +101,7 @@ class HomeScreen extends StatelessWidget {
                                       MediaQuery.of(context).size.width * 0.03,
                                 ),
                               ),
-                            ),
+                      ),
                     ],
                   ),
       ),

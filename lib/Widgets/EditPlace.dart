@@ -1,11 +1,8 @@
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart' as pathDir;
 import 'package:places_app/Providers/Place.dart';
 import 'package:places_app/Providers/Places.dart';
 import 'package:places_app/Widgets/MapInput.dart';
@@ -22,8 +19,6 @@ class EditPlace extends StatefulWidget {
 class _AddPlaceState extends State<EditPlace> {
   final GlobalKey<FormState> _form = GlobalKey<FormState>();
   FocusNode _details = FocusNode();
-  FocusNode _address = FocusNode();
-  var location = null;
   String placeId = "";
 
   Place _place = Place(
@@ -31,8 +26,7 @@ class _AddPlaceState extends State<EditPlace> {
     "",
     "",
     "",
-    Location(
-      address: "",
+    PlaceLocation(
       latitude: 0,
       longitude: 0,
     ),
@@ -60,7 +54,6 @@ class _AddPlaceState extends State<EditPlace> {
         _initialValues = {
           "title": _place.title,
           "details": _place.details,
-          "address": _place.location.address
         };
       }
       routeLoaded = true;
@@ -72,7 +65,6 @@ class _AddPlaceState extends State<EditPlace> {
   @override
   void dispose() {
     _details.dispose();
-    _address.dispose();
     super.dispose();
   }
 
@@ -116,9 +108,9 @@ class _AddPlaceState extends State<EditPlace> {
       //if keyboard toggled and it covered text inputs, make widget bigger
       height: max(
         //default size of widget
-        MediaQuery.of(context).size.height * 0.9,
+        MediaQuery.of(context).size.height * 0.7,
         // text widgets size + keyboard size
-        MediaQuery.of(context).size.height * 0.3 +
+        MediaQuery.of(context).size.height * 0.2 +
             MediaQuery.of(context).viewInsets.bottom,
       ),
       width: MediaQuery.of(context).size.width,
@@ -140,14 +132,14 @@ class _AddPlaceState extends State<EditPlace> {
                       children: [
                         //input texts
                         SizedBox(
-                          height: constraints.maxHeight * 0.4,
+                          height: constraints.maxHeight * 0.25,
                           width: constraints.maxWidth,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               //title
                               SizedBox(
-                                height: constraints.maxHeight * 0.4 * 0.3,
+                                height: constraints.maxHeight * 0.25 * 0.45,
                                 child: TextFormField(
                                   //
                                   decoration: InputDecoration(
@@ -186,7 +178,7 @@ class _AddPlaceState extends State<EditPlace> {
 
                               //details
                               SizedBox(
-                                height: constraints.maxHeight * 0.4 * 0.3,
+                                height: constraints.maxHeight * 0.25 * 0.45,
                                 child: TextFormField(
                                   //
                                   decoration: InputDecoration(
@@ -200,9 +192,8 @@ class _AddPlaceState extends State<EditPlace> {
                                   //
                                   focusNode: _details,
                                   //
-                                  onFieldSubmitted: (_) {
-                                    FocusScope.of(context)
-                                        .requestFocus(_address);
+                                  onFieldSubmitted: (value) {
+                                    saveForm();
                                   },
                                   //
                                   validator: (value) {
@@ -224,56 +215,12 @@ class _AddPlaceState extends State<EditPlace> {
                                   },
                                 ),
                               ),
-
-                              //address
-                              SizedBox(
-                                height: constraints.maxHeight * 0.4 * 0.3,
-                                child: TextFormField(
-                                  //
-                                  decoration: InputDecoration(
-                                    labelText: "Adress",
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                    ),
-                                  ),
-                                  //
-                                  initialValue: _initialValues["address"],
-                                  //
-                                  focusNode: _address,
-                                  //
-                                  onFieldSubmitted: (_) {
-                                    _address.unfocus();
-                                  },
-                                  //
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter a description.';
-                                    }
-                                    return null;
-                                  },
-                                  //
-                                  onSaved: (value) {
-                                    _place = Place(
-                                      _place.id,
-                                      _place.title,
-                                      _place.details,
-                                      _place.imageUrl,
-                                      //
-                                      Location(
-                                        address: value!,
-                                        latitude: _place.location.latitude,
-                                        longitude: _place.location.longitude,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
                             ],
                           ),
                         ),
                         //map and photo
                         SizedBox(
-                          height: constraints.maxHeight * 0.5,
+                          height: constraints.maxHeight * 0.6,
                           width: constraints.maxWidth,
                           //specefic view for mobile and desktop
                           child: Platform.isAndroid || Platform.isIOS
@@ -297,7 +244,17 @@ class _AddPlaceState extends State<EditPlace> {
                                     Flexible(
                                       flex: 1,
                                       child: SizedBox(
-                                        child: MapInput(),
+                                        child: MapInput(
+                                            addLocation: (PlaceLocation location) {
+                                          _place = Place(
+                                            _place.id,
+                                            _place.title,
+                                            _place.details,
+                                            _place.imageUrl,
+                                            //location
+                                            location,
+                                          );
+                                        }),
                                       ),
                                     )
                                   ],
@@ -321,7 +278,17 @@ class _AddPlaceState extends State<EditPlace> {
                                     // MapInput
                                     Flexible(
                                       flex: 1,
-                                      child: MapInput(),
+                                      child: MapInput(
+                                          addLocation: (PlaceLocation location) {
+                                        _place = Place(
+                                          _place.id,
+                                          _place.title,
+                                          _place.details,
+                                          _place.imageUrl,
+                                          //location
+                                          location,
+                                        );
+                                      }),
                                     )
                                   ],
                                 ),

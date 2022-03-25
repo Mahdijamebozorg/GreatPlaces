@@ -24,7 +24,7 @@ class _PhotInputState extends State<PhotInput> {
     final _picker = ImagePicker();
     final imageFile =
         await _picker.pickImage(source: ImageSource.camera, maxWidth: 600);
-    // available save path
+    // get root level app directory
     final appDir = await pathDir.getApplicationDocumentsDirectory();
     // temp file name
     final fileName = path.basename(imageFile?.path as String);
@@ -46,6 +46,7 @@ class _PhotInputState extends State<PhotInput> {
         await _picker.pickImage(source: ImageSource.gallery, maxWidth: 600);
     //if an image has choosen
     if (_pickedImage != null) {
+      print("Picked image: ${_pickedImage.path}");
       setState(() {
         file = _pickedImage;
         widget.addImage(file);

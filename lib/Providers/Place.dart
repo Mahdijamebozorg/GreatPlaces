@@ -1,12 +1,11 @@
 import 'package:flutter/foundation.dart';
 
-class Location {
+class PlaceLocation {
   final double latitude;
   final double longitude;
-  final String address;
 
-  Location(
-      {required this.latitude, required this.longitude, required this.address});
+  PlaceLocation(
+      {required this.latitude, required this.longitude});
 }
 
 class Place with ChangeNotifier {
@@ -14,7 +13,7 @@ class Place with ChangeNotifier {
   String _title;
   String _details;
   String _imageUrl;
-  Location _location;
+  PlaceLocation _location;
 
   Place(
     this._id,
@@ -32,7 +31,7 @@ class Place with ChangeNotifier {
 
   String get imageUrl => _imageUrl;
 
-  Location get location => _location;
+  PlaceLocation get location => _location;
 
   Future chagneTitle(String newTitle) async {
     _title = newTitle;
@@ -49,7 +48,7 @@ class Place with ChangeNotifier {
     notifyListeners();
   }
 
-  Future chagneLocation(Location newLocation) async {
+  Future chagneLocation(PlaceLocation newLocation) async {
     _location = newLocation;
     notifyListeners();
   }

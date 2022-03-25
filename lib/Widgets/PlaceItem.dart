@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:places_app/Providers/Place.dart';
+import 'package:places_app/Providers/Places.dart';
+import 'package:provider/provider.dart';
 
 class PlaceItem extends StatelessWidget {
   final Place _place;
@@ -36,8 +38,21 @@ class PlaceItem extends StatelessWidget {
             backgroundColor: Colors.black54,
             title: Text(_place.title),
             subtitle: Text(_place.details),
-            trailing:
-                IconButton(onPressed: () {}, icon: const Icon(Icons.star)),
+            trailing: Row(
+              children: [
+                IconButton(
+                  onPressed: () {
+                    Provider.of<Places>(context, listen: false)
+                        .removePlace(_place.id);
+                  },
+                  icon: const Icon(Icons.delete),
+                ),
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.star),
+                ),
+              ],
+            ),
           ),
         ),
       ),

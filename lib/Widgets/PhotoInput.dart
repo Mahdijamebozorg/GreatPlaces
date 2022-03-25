@@ -30,12 +30,11 @@ class _PhotInputState extends State<PhotInput> {
     final fileName = path.basename(imageFile?.path as String);
     // saving file to path
     await imageFile?.saveTo("${appDir.path}/$fileName");
-    print("Image saved");
     if (imageFile != null) {
-      setState(() {
-        file = imageFile;
-        widget.addImage(file);
-      });
+      print("Image saved ${imageFile.path}");
+      file = imageFile;
+      await widget.addImage(file);
+      setState(() {});
     }
   }
 
@@ -47,10 +46,9 @@ class _PhotInputState extends State<PhotInput> {
     //if an image has choosen
     if (_pickedImage != null) {
       print("Picked image: ${_pickedImage.path}");
-      setState(() {
-        file = _pickedImage;
-        widget.addImage(file);
-      });
+      file = _pickedImage;
+      await widget.addImage(file);
+      setState(() {});
     }
   }
 

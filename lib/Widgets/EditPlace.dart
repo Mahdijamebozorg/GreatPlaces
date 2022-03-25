@@ -20,6 +20,7 @@ class _AddPlaceState extends State<EditPlace> {
   final GlobalKey<FormState> _form = GlobalKey<FormState>();
   FocusNode _details = FocusNode();
   String placeId = "";
+  bool isSaved = false;
 
   Place _place = Place(
     Random().nextInt(1000).toString(),
@@ -27,8 +28,8 @@ class _AddPlaceState extends State<EditPlace> {
     "",
     "",
     PlaceLocation(
-      latitude: 0,
-      longitude: 0,
+      latitude: double.infinity,
+      longitude: double.infinity,
     ),
   );
 
@@ -63,8 +64,21 @@ class _AddPlaceState extends State<EditPlace> {
 
   ///remove data after distructing
   @override
-  void dispose() {
+  void dispose() async {
     _details.dispose();
+    //if an image has chosen and place not saved
+    if (!isSaved) {
+      if (_place.imageUrl.isNotEmpty) {
+        //using future in dispose and init structure
+        Future.delayed(
+            Duration.zero,
+            () async => {
+                  await File(_place.imageUrl)
+                      .delete()
+                      .then((file) => print("deleted: ${file.path}"))
+                });
+      }
+    }
     super.dispose();
   }
 
@@ -72,11 +86,10 @@ class _AddPlaceState extends State<EditPlace> {
   Future saveForm() async {
     //validation...
     if (!_form.currentState!.validate() ||
-            //photo
-            _place.imageUrl.isEmpty //||
+        //photo
+        _place.imageUrl.isEmpty ||
         //location
-        // location == null
-        ) return;
+        _place.location.latitude == double.infinity) return;
 
     _form.currentState!.save();
     //new place
@@ -99,6 +112,7 @@ class _AddPlaceState extends State<EditPlace> {
         _place.location,
       ));
     }
+    isSaved = true;
     Navigator.of(context).pop();
   }
 
@@ -229,7 +243,15 @@ class _AddPlaceState extends State<EditPlace> {
                                   children: [
                                     Flexible(
                                       flex: 1,
-                                      child: PhotInput(addImage: (XFile file) {
+                                      child: PhotInput(
+                                          addImage: (XFile file) async {
+                                        //remove previews image
+                                        if (_place.imageUrl.isNotEmpty) {
+                                          await File(_place.imageUrl)
+                                              .delete()
+                                              .then((file) => print(
+                                                  "deleted: ${file.path}"));
+                                        }
                                         _place = Place(
                                           _place.id,
                                           _place.title,
@@ -244,8 +266,8 @@ class _AddPlaceState extends State<EditPlace> {
                                     Flexible(
                                       flex: 1,
                                       child: SizedBox(
-                                        child: MapInput(
-                                            addLocation: (PlaceLocation location) {
+                                        child: MapInput(addLocation:
+                                            (PlaceLocation location) {
                                           _place = Place(
                                             _place.id,
                                             _place.title,
@@ -264,7 +286,15 @@ class _AddPlaceState extends State<EditPlace> {
                                     // PhotoInput
                                     Flexible(
                                       flex: 1,
-                                      child: PhotInput(addImage: (XFile file) {
+                                      child: PhotInput(
+                                          addImage: (XFile file) async {
+                                        //remove previews image
+                                        if (_place.imageUrl.isNotEmpty) {
+                                          await File(_place.imageUrl)
+                                              .delete()
+                                              .then((file) => print(
+                                                  "deleted: ${file.path}"));
+                                        }
                                         _place = Place(
                                           _place.id,
                                           _place.title,
@@ -278,8 +308,8 @@ class _AddPlaceState extends State<EditPlace> {
                                     // MapInput
                                     Flexible(
                                       flex: 1,
-                                      child: MapInput(
-                                          addLocation: (PlaceLocation location) {
+                                      child: MapInput(addLocation:
+                                          (PlaceLocation location) {
                                         _place = Place(
                                           _place.id,
                                           _place.title,

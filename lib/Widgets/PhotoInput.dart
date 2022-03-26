@@ -18,22 +18,32 @@ class PhotInput extends StatefulWidget {
 
 class _PhotInputState extends State<PhotInput> {
   XFile? file = XFile("");
+  bool isloading = false;
 
   ///take image if device have camera
   Future _takeImage() async {
     final _picker = ImagePicker();
     final imageFile =
         await _picker.pickImage(source: ImageSource.camera, maxWidth: 600);
-    // get root level app directory
-    final appDir = await pathDir.getApplicationDocumentsDirectory();
-    // temp file name
-    final fileName = path.basename(imageFile?.path as String);
-    // saving file to path
-    await imageFile?.saveTo("${appDir.path}/$fileName");
+
+    //if has taken
     if (imageFile != null) {
+      //enable CircularProgressIndicator
+      isloading = true;
+      setState(() {});
+
+      // get root level app directory
+      final appDir = await pathDir.getApplicationDocumentsDirectory();
+      // temp file name
+      final fileName = path.basename(imageFile.path);
+      //save file
+      await imageFile.saveTo("${appDir.path}/$fileName");
       print("Image saved ${imageFile.path}");
       file = imageFile;
       await widget.addImage(file);
+
+      //disable CircularProgressIndicator
+      isloading = false;
       setState(() {});
     }
   }
@@ -45,9 +55,16 @@ class _PhotInputState extends State<PhotInput> {
         await _picker.pickImage(source: ImageSource.gallery, maxWidth: 600);
     //if an image has choosen
     if (_pickedImage != null) {
+      //enable CircularProgressIndicator
+      isloading = true;
+      setState(() {});
+
       print("Picked image: ${_pickedImage.path}");
       file = _pickedImage;
       await widget.addImage(file);
+
+      //disable CircularProgressIndicator
+      isloading = false;
       setState(() {});
     }
   }
@@ -78,30 +95,33 @@ class _PhotInputState extends State<PhotInput> {
           ),
           Expanded(
             //photo preview
-            child: file!.path == ""
-                ? Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Container(
-                      decoration:
-                          BoxDecoration(border: Border.all(color: Colors.red)),
-                      child: const Center(child: Text("No image has chosen!")),
-                    ),
-                  )
-                : kIsWeb
+            child: isloading
+                ? const Center(child: CircularProgressIndicator())
+                : file!.path == ""
                     ? Padding(
                         padding: const EdgeInsets.all(8),
-                        child: Image.network(
-                          file!.path,
-                          fit: BoxFit.fill,
+                        child: Container(
+                          decoration: BoxDecoration(
+                              border: Border.all(color: Colors.red)),
+                          child:
+                              const Center(child: Text("No image has chosen!")),
                         ),
                       )
-                    : Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: Image.file(
-                          File(file!.path),
-                          fit: BoxFit.fill,
-                        ),
-                      ),
+                    : kIsWeb
+                        ? Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Image.network(
+                              file!.path,
+                              fit: BoxFit.fill,
+                            ),
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Image.file(
+                              File(file!.path),
+                              fit: BoxFit.fill,
+                            ),
+                          ),
           ),
         ],
       ),

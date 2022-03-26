@@ -25,6 +25,7 @@ class Places with ChangeNotifier {
         "title": newPlace.title,
         "details": newPlace.details,
         "imageUrl": newPlace.imageUrl, //path to image
+        "address": newPlace.location.address,
         "latitude": newPlace.location.latitude.toString(),
         "longitude": newPlace.location.longitude.toString(),
       },
@@ -44,6 +45,7 @@ class Places with ChangeNotifier {
           "title": newPlace.title,
           "details": newPlace.details,
           "imageUrl": newPlace.imageUrl, //path to image
+          "address": newPlace.location.address,
           "latitude": newPlace.location.latitude.toString(),
           "longitude": newPlace.location.longitude.toString(),
         },
@@ -65,6 +67,7 @@ class Places with ChangeNotifier {
           place["details"],
           place["imageUrl"],
           PlaceLocation(
+            address: place["address"],
             latitude: double.parse(place["latitude"]),
             longitude: double.parse(place["longitude"]),
           ),

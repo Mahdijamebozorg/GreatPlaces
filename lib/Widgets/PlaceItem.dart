@@ -4,14 +4,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:places_app/Providers/Place.dart';
 import 'package:places_app/Providers/Places.dart';
+import 'package:places_app/Widgets/PlaceDetailsScreen.dart';
 import 'package:provider/provider.dart';
 
 class PlaceItem extends StatelessWidget {
-  final Place _place;
-  const PlaceItem(this._place, {Key? key}) : super(key: key);
+  const PlaceItem({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final _place = Provider.of<Place>(context);
     //having shadow
     return Card(
       elevation: 15,
@@ -21,37 +22,47 @@ class PlaceItem extends StatelessWidget {
       //rounding corners
       child: ClipRRect(
         borderRadius: const BorderRadius.all(Radius.circular(10)),
-        child: GridTile(
-          //photo
-          child: Hero(
-            tag: _place.id,
-            child: FadeInImage(
-              fit: BoxFit.fill,
-              placeholder: const AssetImage("assets/images/temp.png"),
-              image: (kIsWeb
-                  ? NetworkImage(_place.imageUrl)
-                  : FileImage(File(_place.imageUrl))) as ImageProvider,
+        child: GestureDetector(
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => ChangeNotifierProvider.value(
+                value: _place,
+                child: const PlaceDetailsScreen(),
+              ),
             ),
           ),
-          //details
-          footer: GridTileBar(
-            backgroundColor: Colors.black54,
-            title: Text(_place.title),
-            subtitle: Text(_place.details),
-            trailing: Row(
-              children: [
-                IconButton(
-                  onPressed: () {
-                    Provider.of<Places>(context, listen: false)
-                        .removePlace(_place.id);
-                  },
-                  icon: const Icon(Icons.delete),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.star),
-                ),
-              ],
+          child: GridTile(
+            //photo
+            child: Hero(
+              tag: _place.id,
+              child: FadeInImage(
+                fit: BoxFit.fill,
+                placeholder: const AssetImage("assets/images/temp.png"),
+                image: (kIsWeb
+                    ? NetworkImage(_place.imageUrl)
+                    : FileImage(File(_place.imageUrl))) as ImageProvider,
+              ),
+            ),
+            //details
+            footer: GridTileBar(
+              backgroundColor: Colors.black54,
+              title: Text(_place.title),
+              subtitle: Text(_place.location.address),
+              trailing: Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Provider.of<Places>(context, listen: false)
+                          .removePlace(_place.id);
+                    },
+                    icon: const Icon(Icons.delete),
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.star),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

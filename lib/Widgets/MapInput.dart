@@ -18,6 +18,7 @@ class MapInput extends StatefulWidget {
 class _MapInputState extends State<MapInput> {
   String _mapPreview = "";
   String _errorMessage = "No place has chosen!";
+  bool isLoading = false;
 
   Future<bool> _checkPermissionsAndServices(Location location) async {
     //check permission state
@@ -42,27 +43,44 @@ class _MapInputState extends State<MapInput> {
     return true;
   }
 
+  ///take user current location
   Future _getCurrentLocation() async {
+    //enable CircularProgressIndicator
+    isLoading = true;
+    setState(() {});
+
     Location location = Location();
-
-    final ok = await _checkPermissionsAndServices(location);
-    if (!ok) {
-      print("Couldn't acces to location!");
-      return;
-    }
-
-    final LocationData locationData = await location.getLocation();
-    widget.addLocation(PlaceLocation(
-      latitude: locationData.latitude!,
-      longitude: locationData.longitude!,
-    ));
     try {
+      //check problems
+      final ok = await _checkPermissionsAndServices(location);
+      if (!ok) {
+        print("Couldn't acces to location!");
+        return;
+      }
+
+      //get current location
+      final LocationData locationData = await location.getLocation();
+
       final mapTempPreview = LocationHelper.generateLocationPreview(
         latitude: locationData.latitude!,
         longitude: locationData.longitude!,
       );
       //test connection
       await http.get(Uri.parse(mapTempPreview));
+
+      //convert location to address
+      final String address = await LocationHelper.generateAddressWithLocation(
+        latitude: locationData.latitude!,
+        longitude: locationData.longitude!,
+      );
+      //add to place
+      widget.addLocation(
+        PlaceLocation(
+          latitude: locationData.latitude!,
+          longitude: locationData.longitude!,
+          address: address,
+        ),
+      );
       //get map preview from google maps api
       _mapPreview = mapTempPreview;
     }
@@ -73,11 +91,22 @@ class _MapInputState extends State<MapInput> {
     } on SocketException catch (e) {
       print("error in getCurrentLocation: $e");
       _errorMessage = "No internet connection!";
+    } catch (e) {
+      print("error in getCurrentLocation  $e");
+      _errorMessage = e.toString();
     }
+    //disable CircularProgressIndicator
+    isLoading = false;
     setState(() {});
   }
 
-  Future _searchLocation() async {}
+  ///search locations on map
+  Future _searchLocation() async {
+    isLoading = true;
+    setState(() {});
+    isLoading = false;
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -121,26 +150,33 @@ class _MapInputState extends State<MapInput> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(8),
-              child: _mapPreview.isEmpty
-                  ? Container(
-                      decoration:
-                          BoxDecoration(border: Border.all(color: Colors.red)),
-                      child: Center(child: Text(_errorMessage)),
-                    )
-                  : Image.network(
-                      _mapPreview,
-                      errorBuilder: (_, obj, stackTrace) {
-                        final err = obj as NetworkImageLoadException;
-                        print(err.toString());
-                        return Container(
+              child: isLoading
+                  //if loading static map
+                  ? const Center(child: CircularProgressIndicator())
+                  //
+                  : _mapPreview.isEmpty
+                      //error handling during loading map
+                      ? Container(
                           decoration: BoxDecoration(
                               border: Border.all(color: Colors.red)),
-                          child: Center(
-                            child: Text("Error ${err.statusCode.toString()}"),
-                          ),
-                        );
-                      },
-                    ),
+                          child: Center(child: Text(_errorMessage)),
+                        )
+                      : Image.network(
+                          _mapPreview,
+                          //error handling during image proccessing
+                          errorBuilder: (_, obj, stackTrace) {
+                            final err = obj as NetworkImageLoadException;
+                            print(err.toString());
+                            return Container(
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.red)),
+                              child: Center(
+                                child:
+                                    Text("Error ${err.statusCode.toString()}"),
+                              ),
+                            );
+                          },
+                        ),
             ),
           ),
         ],

@@ -82,9 +82,13 @@ class HomeScreen extends StatelessWidget {
                                     child:
                                         Center(child: Text("No place added!"))),
                               )
+                            //body
                             : SliverGrid(
                                 delegate: SliverChildBuilderDelegate(
-                                  (_, index) => PlaceItem(data.places[index]),
+                                  (_, index) => ChangeNotifierProvider.value(
+                                    value: data.places[index],
+                                    child: const PlaceItem(),
+                                  ),
                                   childCount: _places.places.length,
                                 ),
                                 gridDelegate:

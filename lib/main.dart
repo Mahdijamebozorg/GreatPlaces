@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:places_app/Providers/Places.dart';
+import 'package:places_app/Widgets/PlaceDetailsScreen.dart';
 import 'package:provider/provider.dart';
-
 import 'package:places_app/Screens/HomeScreen.dart';
 
 main() {
@@ -24,7 +24,8 @@ class PlacesApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         home: const HomeScreen(),
         routes: {
-          HomeScreen.routeName: (ctx) => const HomeScreen(),
+          HomeScreen.routeName: (_) => const HomeScreen(),
+          PlaceDetailsScreen.routeName: (_) => const PlaceDetailsScreen()
         },
         theme: ThemeData(
             backgroundColor: Colors.teal[100],

@@ -28,6 +28,7 @@ class _AddPlaceState extends State<EditPlace> {
     "",
     "",
     PlaceLocation(
+      address: "",
       latitude: double.infinity,
       longitude: double.infinity,
     ),

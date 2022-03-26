@@ -1,11 +1,15 @@
 import 'package:flutter/foundation.dart';
 
 class PlaceLocation {
+  final String address;
   final double latitude;
   final double longitude;
 
-  PlaceLocation(
-      {required this.latitude, required this.longitude});
+  PlaceLocation({
+    required this.address,
+    required this.latitude,
+    required this.longitude,
+  });
 }
 
 class Place with ChangeNotifier {
